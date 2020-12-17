@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "568445363553",
+    "project_id": "balance-manager-app",
+    "storage_bucket": "balance-manager-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:568445363553:android:aa6de49f24abdc9032d120",
+        "android_client_info": {
+          "package_name": "com.bluetigers.balancemanagerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "568445363553-2vb137ro9khev6g2thsavtp9i2fr9tnm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKuJC1hhJhVfQLeJATSm9JQ8JGGRzXxx0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "568445363553-2vb137ro9khev6g2thsavtp9i2fr9tnm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

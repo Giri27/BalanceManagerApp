@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Balance Manager App</string>
+    <string name="app_logo_img">Application logo image</string>
 </resources>
