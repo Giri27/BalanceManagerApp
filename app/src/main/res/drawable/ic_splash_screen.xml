@@ -1,9 +1,11 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
+    xmlns:tools="http://schemas.android.com/tools"
     android:width="412dp"
     android:height="870dp"
     android:viewportWidth="412"
-    android:viewportHeight="870">
+    android:viewportHeight="870"
+    tools:ignore="VectorRaster">
   <path
       android:pathData="M0,0h412v870h-412z">
     <aapt:attr name="android:fillColor">
@@ -13,7 +15,7 @@
           android:endY="880.44"
           android:endX="227.836"
           android:type="linear">
-        <item android:offset="0" android:color="#FF6200EA"/>
+        <item android:offset="0" android:color="#FF3700B3"/>
         <item android:offset="1" android:color="#FF9D46FF"/>
       </gradient>
     </aapt:attr>
