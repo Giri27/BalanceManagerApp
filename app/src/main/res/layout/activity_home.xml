@@ -41,6 +41,20 @@
 
 
             <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/comic_sans_ms"
+                android:text="@string/earnings"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:textStyle="italic"
+                app:layout_constraintBottom_toTopOf="@+id/home_earnings_textView"
+                app:layout_constraintLeft_toLeftOf="@+id/home_earnings_box"
+                app:layout_constraintRight_toRightOf="@+id/home_earnings_box"
+                app:layout_constraintTop_toTopOf="@+id/home_earnings_box" />
+
+            <TextView
                 android:id="@+id/home_earnings_textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -80,6 +94,19 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/home_earnings_box">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/comic_sans_ms"
+                android:text="@string/outgoings"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:textStyle="italic"
+                app:layout_constraintBottom_toTopOf="@+id/home_outgoings_textView"
+                app:layout_constraintLeft_toLeftOf="@+id/home_outgoings_box"
+                app:layout_constraintRight_toRightOf="@+id/home_outgoings_box"
+                app:layout_constraintTop_toTopOf="@+id/home_outgoings_box" />
 
             <TextView
                 android:id="@+id/home_outgoings_textView"
@@ -113,13 +140,27 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/home_balance_box"
-            android:layout_width="350dp"
-            android:layout_height="210dp"
+            android:layout_width="175dp"
+            android:layout_height="105dp"
             android:background="@drawable/ic_blue_box"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/home_outgoings_box">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/comic_sans_ms"
+                android:text="@string/balance"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:textStyle="italic"
+                app:layout_constraintBottom_toTopOf="@+id/home_balance_textView"
+                app:layout_constraintLeft_toLeftOf="@+id/home_balance_box"
+                app:layout_constraintRight_toRightOf="@+id/home_balance_box"
+                app:layout_constraintTop_toTopOf="@+id/home_balance_box" />
 
             <TextView
                 android:id="@+id/home_balance_textView"
@@ -133,21 +174,10 @@
                 android:textStyle="italic"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.536"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.35" />
-
-            <Button
-                android:id="@+id/home_balance_addBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_btn"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.502"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/home_balance_textView"
-                app:layout_constraintVertical_bias="0.35" />
+                app:layout_constraintVertical_bias="0.774" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

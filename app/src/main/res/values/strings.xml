@@ -13,4 +13,9 @@
     <string name="add_btn">Aggiungi</string>
     <string name="default_amount">10.00</string>
     <string name="add_earnings">Add earnings: </string>
+    <string name="balance">Balance</string>
+    <string name="outgoings">Outgoings</string>
+    <string name="earnings">Earnings</string>
+    <string name="add_expense">Add expense</string>
+    <string name="description">Description</string>
 </resources>

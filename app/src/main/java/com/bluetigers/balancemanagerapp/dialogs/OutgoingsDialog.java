@@ -22,23 +22,23 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
 
-public class EarningsDialog extends AppCompatDialogFragment {
+public class OutgoingsDialog extends AppCompatDialogFragment {
 
     private static final String TAG = "Earnings Dialog";
 
-    private EditText earningsTxt;
-    private EditText earningsDescription;
+    private EditText outgoingsTxt;
+    private EditText descriptionTxt;
 
     private DatePicker datePicker;
 
-    private EarningsDialogListener listener;
+    private OutgoingsDialog.OutgoingsDialogListener listener;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         try {
-            listener = (EarningsDialogListener) context;
+            listener = (OutgoingsDialog.OutgoingsDialogListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString() + " must implement Earnings Dialog Listner");
         }
@@ -50,12 +50,12 @@ public class EarningsDialog extends AppCompatDialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         LayoutInflater inflater = Objects.requireNonNull(getActivity()).getLayoutInflater();
-        View view = inflater.inflate(R.layout.layout_earnings_dialog, null);
+        View view = inflater.inflate(R.layout.layout_outgoings_dialog, null);
 
         builder.setView(view)
                 .setNegativeButton("Cancel", (dialog, which) -> Log.v(TAG, "dialog: operation canceled!"))
                 .setPositiveButton("Add", (dialog, which) -> {
-                    float amout = Float.parseFloat(earningsTxt.getText().toString());
+                    float amout = Float.parseFloat(outgoingsTxt.getText().toString());
 
                     Date date = null;
 
@@ -69,22 +69,21 @@ public class EarningsDialog extends AppCompatDialogFragment {
                         e.printStackTrace();
                     }
 
-                    String description = earningsDescription.getText().toString();
-
+                    String description = descriptionTxt.getText().toString();
                     if (description.isEmpty())
-                        description = "Entrate";
+                        description = "Uscite";
 
-                    listener.applyEarnings(amout, date, description);
+                    listener.applyOutgoings(amout, date, description);
                 });
 
-        earningsTxt = view.findViewById(R.id.dialog_earnings_add);
-        datePicker = view.findViewById(R.id.dialog_earnings_date);
-        earningsDescription = view.findViewById(R.id.dialog_earnings_description);
+        outgoingsTxt = view.findViewById(R.id.dialog_outgoings_add);
+        datePicker = view.findViewById(R.id.dialog_outgoings_date);
+        descriptionTxt = view.findViewById(R.id.dialog_outgoings_description);
 
         return builder.create();
     }
 
-    public interface EarningsDialogListener {
-        void applyEarnings(float amount, Date date, String description);
+    public interface OutgoingsDialogListener {
+        void applyOutgoings(float amount, Date date, String description);
     }
 }

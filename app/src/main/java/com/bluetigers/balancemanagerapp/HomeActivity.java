@@ -18,6 +18,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.bluetigers.balancemanagerapp.dialogs.EarningsDialog;
+import com.bluetigers.balancemanagerapp.dialogs.OutgoingsDialog;
 import com.bluetigers.balancemanagerapp.utils.DatabaseConnection;
 import com.bluetigers.balancemanagerapp.utils.models.User;
 import com.firebase.ui.auth.AuthUI;
@@ -37,8 +38,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+
+// TODO create movements activity
 public class HomeActivity extends AppCompatActivity implements
-        NavigationView.OnNavigationItemSelectedListener, EarningsDialog.EarningsDialogListener {
+        NavigationView.OnNavigationItemSelectedListener, EarningsDialog.EarningsDialogListener,
+        OutgoingsDialog.OutgoingsDialogListener {
 
     private static final String TAG = "HomeActivity";
     private static final int RC_SIGN_IN = 123;
@@ -58,6 +62,7 @@ public class HomeActivity extends AppCompatActivity implements
 
     private TextView earningsTxtView;
     private TextView outgoingsTxtView;
+    private TextView balanceTxtView;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -100,6 +105,12 @@ public class HomeActivity extends AppCompatActivity implements
 
             outgoingsTxtView = findViewById(R.id.home_outgoings_textView);
             outgoingsTxtView.setText(outgoingsAmount + " €");
+
+            Button outgoingsBtn = findViewById(R.id.home_outgoiings_addBtn);
+            outgoingsBtn.setOnClickListener(v -> openOutgoingsDialog());
+
+            balanceTxtView = findViewById(R.id.home_balance_textView);
+            balanceTxtView.setText(earningsAmount - outgoingsAmount + " €");
         } else
             signIN();
     }
@@ -279,11 +290,17 @@ public class HomeActivity extends AppCompatActivity implements
         }
         earningsTxtView.setText(earningsAmount + " €");
         outgoingsTxtView.setText(outgoingsAmount + " €");
+        balanceTxtView.setText(earningsAmount - outgoingsAmount + " €");
     }
 
     private void openEarningsDialog() {
         EarningsDialog earningsDialog = new EarningsDialog();
         earningsDialog.show(getSupportFragmentManager(), "earnings dialog");
+    }
+
+    private void openOutgoingsDialog() {
+        OutgoingsDialog outgoingsDialog = new OutgoingsDialog();
+        outgoingsDialog.show(getSupportFragmentManager(), "outgoings dialog");
     }
 
     @Override
@@ -309,9 +326,9 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void applyTexts(float amount, Date date) {
-        String sql = "INSERT INTO " + username + ".earnings (amount, date)" +
-                "VALUES (?, ?);";
+    public void applyEarnings(float amount, Date date, String description) {
+        String sql = "INSERT INTO " + username + ".earnings (description, amount, date)" +
+                "VALUES (?, ?, ?);";
 
         PreparedStatement preparedStatement;
 
@@ -321,12 +338,40 @@ public class HomeActivity extends AppCompatActivity implements
 
             preparedStatement.clearParameters();
 
-            preparedStatement.setFloat(1, amount);
-            preparedStatement.setDate(2, date);
+            preparedStatement.setString(1, description);
+            preparedStatement.setFloat(2, amount);
+            preparedStatement.setDate(3, date);
 
             int response = preparedStatement.executeUpdate();
 
             Log.v(TAG, "dbQuery: earnings response - " + response);
+
+            refreshTextViews();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+    @Override
+    public void applyOutgoings(float amount, Date date, String description) {
+        String sql = "INSERT INTO " + username + ".outgoings (description, amount, date)" +
+                "VALUES (?, ?, ?);";
+
+        PreparedStatement preparedStatement;
+
+        try {
+            preparedStatement = databaseConnection.getConnection()
+                    .prepareStatement(sql);
+
+            preparedStatement.clearParameters();
+
+            preparedStatement.setString(1, description);
+            preparedStatement.setFloat(2, amount);
+            preparedStatement.setDate(3, date);
+
+            int response = preparedStatement.executeUpdate();
+
+            Log.v(TAG, "dbQuery: outgoings response - " + response);
 
             refreshTextViews();
         } catch (SQLException throwables) {
