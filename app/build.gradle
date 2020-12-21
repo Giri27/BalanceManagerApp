@@ -40,6 +40,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics:17.3.0'
     implementation 'com.google.firebase:firebase-database:19.6.0'
 
+    implementation "org.postgresql:postgresql:42.2.9.jre7"
+
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

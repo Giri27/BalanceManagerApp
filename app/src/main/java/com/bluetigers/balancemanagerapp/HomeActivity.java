@@ -16,6 +16,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.bluetigers.balancemanagerapp.utils.DatabaseConnection;
 import com.bluetigers.balancemanagerapp.utils.models.User;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -25,6 +26,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -34,13 +39,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private static final String TAG = "HomeActivity";
     private static final int RC_SIGN_IN = 123;
 
+    private float earningsAmount = 0;
+    private float outgoingsAmount = 0;
+
     private FirebaseUser firebaseUser;
 
     private DatabaseReference databaseReference;
+    private DatabaseConnection databaseConnection;
 
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,9 +77,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         drawerToggle.syncState();
 
-        if (firebaseUser != null)
+        databaseConnection = new DatabaseConnection();
+
+        if (firebaseUser != null) {
             setupHeader();
-        else
+            getDataFromDatabase();
+
+            TextView earningsTxtView = findViewById(R.id.home_earnings_textView);
+            earningsTxtView.setText(earningsAmount + " €");
+
+            TextView outgoingsTxtView = findViewById(R.id.home_outgoings_textView);
+            outgoingsTxtView.setText(outgoingsAmount + " €");
+        } else
             signIN();
     }
 
@@ -80,6 +99,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         if (firebaseUser != null) {
             User user = new User(firebaseUser.getEmail(), firebaseUser.getDisplayName());
             databaseReference.child("users").child(firebaseUser.getUid()).setValue(user);
+
+            checkForUsersExists();
+            getDataFromDatabase();
         }
     }
 
@@ -142,6 +164,99 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         usernameTxt.setText(firebaseUser.getDisplayName());
     }
 
+    private void getDataFromDatabase() {
+
+        String username = "";
+
+        Statement statement = databaseConnection.getStatement();
+
+        try {
+            ResultSet set = statement.executeQuery("SELECT * FROM public.users WHERE email = '" + firebaseUser.getEmail() + "';");
+
+            while (set.next())
+                username = set.getString("username");
+
+            String sql = "CREATE SCHEMA IF NOT EXISTS " + username;
+
+            int response = databaseConnection.getStatement().executeUpdate(sql);
+
+            if (response != 0)
+                Log.e(TAG, "dbQuery: Creation of schema " + username + " failed!");
+
+            sql = "CREATE TABLE IF NOT EXISTS " + username + ".earnings(" +
+                    "id serial PRIMARY KEY," +
+                    "description text DEFAULT 'Entrata'," +
+                    "amount float NOT NULL," +
+                    "date DATE NOT NULL);";
+
+            response = databaseConnection.getStatement().executeUpdate(sql);
+
+            if (response != 0)
+                Log.e(TAG, "dbQuery: Creation of table earnings failed!");
+
+            sql = "CREATE TABLE IF NOT EXISTS " + username + ".outgoings(" +
+                    "id serial PRIMARY KEY," +
+                    "description text DEFAULT 'Uscita'," +
+                    "amount float NOT NULL," +
+                    "date DATE NOT NULL);";
+
+            response = databaseConnection.getStatement().executeUpdate(sql);
+
+            if (response != 0)
+                Log.e(TAG, "dbQuery: Creation of table outgoings failed!");
+
+            // Retrive earnings and outgoings
+
+            set = databaseConnection.getStatement().executeQuery("SELECT SUM(amount) FROM " + username + ".earnings;");
+
+            while (set.next())
+                earningsAmount = set.getFloat("sum");
+
+            set = databaseConnection.getStatement().executeQuery("SELECT SUM(amount) FROM " + username + ".outgoings;");
+
+            while (set.next())
+                outgoingsAmount = set.getFloat("sum");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+    }
+
+    private void checkForUsersExists() {
+        try {
+            ResultSet set = databaseConnection.getStatement().executeQuery("SELECT * FROM public.users " +
+                    "WHERE email = '" + firebaseUser.getEmail() + "';");
+
+            String dbEmail = "";
+
+            while (set.next())
+                dbEmail = set.getString("email");
+
+            String[] name = Objects.requireNonNull(firebaseUser.getDisplayName()).split(" ");
+
+            if (!dbEmail.equals(firebaseUser.getEmail())) {
+                Log.w(TAG, "dbQuery: user not registered!" + firebaseUser.getDisplayName());
+
+                String sql = "INSERT INTO public.users (email, password, username)" +
+                        "VALUES (?, ?, ?);";
+
+                PreparedStatement preparedStatement = databaseConnection.getConnection()
+                        .prepareStatement(sql);
+                preparedStatement.clearParameters();
+
+                preparedStatement.setString(1, firebaseUser.getEmail());
+                preparedStatement.setString(2, firebaseUser.getUid());
+                preparedStatement.setString(3, name[0]);
+
+                int response = preparedStatement.executeUpdate();
+
+                Log.v(TAG, "dbQuery: registration result - " + response);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -153,7 +268,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 Log.v(TAG, "firebaseAuth: Login successfully!");
                 firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 mNavigationView.setCheckedItem(R.id.nav_dashboard);
+
                 setupHeader();
+                checkForUsersExists();
+                getDataFromDatabase();
             } else {
                 assert response != null;
                 Log.e(TAG, "firebaseAuth: " + Objects.requireNonNull(response.getError()).getErrorCode());
