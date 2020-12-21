@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.bluetigers.balancemanagerapp.dialogs.EarningsDialog;
 import com.bluetigers.balancemanagerapp.utils.DatabaseConnection;
 import com.bluetigers.balancemanagerapp.utils.models.User;
 import com.firebase.ui.auth.AuthUI;
@@ -26,6 +28,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,13 +37,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class HomeActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener, EarningsDialog.EarningsDialogListener {
 
     private static final String TAG = "HomeActivity";
     private static final int RC_SIGN_IN = 123;
 
     private float earningsAmount = 0;
     private float outgoingsAmount = 0;
+
+    private String username;
 
     private FirebaseUser firebaseUser;
 
@@ -49,6 +55,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
+
+    private TextView earningsTxtView;
+    private TextView outgoingsTxtView;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -83,10 +92,13 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             setupHeader();
             getDataFromDatabase();
 
-            TextView earningsTxtView = findViewById(R.id.home_earnings_textView);
+            earningsTxtView = findViewById(R.id.home_earnings_textView);
             earningsTxtView.setText(earningsAmount + " €");
 
-            TextView outgoingsTxtView = findViewById(R.id.home_outgoings_textView);
+            Button earningsBtn = findViewById(R.id.home_earnings_addBtn);
+            earningsBtn.setOnClickListener(v -> openEarningsDialog());
+
+            outgoingsTxtView = findViewById(R.id.home_outgoings_textView);
             outgoingsTxtView.setText(outgoingsAmount + " €");
         } else
             signIN();
@@ -166,8 +178,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private void getDataFromDatabase() {
 
-        String username = "";
-
         Statement statement = databaseConnection.getStatement();
 
         try {
@@ -205,21 +215,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             if (response != 0)
                 Log.e(TAG, "dbQuery: Creation of table outgoings failed!");
 
-            // Retrive earnings and outgoings
-
-            set = databaseConnection.getStatement().executeQuery("SELECT SUM(amount) FROM " + username + ".earnings;");
-
-            while (set.next())
-                earningsAmount = set.getFloat("sum");
-
-            set = databaseConnection.getStatement().executeQuery("SELECT SUM(amount) FROM " + username + ".outgoings;");
-
-            while (set.next())
-                outgoingsAmount = set.getFloat("sum");
+            getEarningsAndOutgoings();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-
     }
 
     private void checkForUsersExists() {
@@ -257,6 +256,36 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    private void getEarningsAndOutgoings() throws SQLException {
+        // Retrive earnings and outgoings
+
+        ResultSet set = databaseConnection.getStatement().executeQuery("SELECT SUM(amount) FROM " + username + ".earnings;");
+
+        while (set.next())
+            earningsAmount = set.getFloat("sum");
+
+        set = databaseConnection.getStatement().executeQuery("SELECT SUM(amount) FROM " + username + ".outgoings;");
+
+        while (set.next())
+            outgoingsAmount = set.getFloat("sum");
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void refreshTextViews() {
+        try {
+            getEarningsAndOutgoings();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        earningsTxtView.setText(earningsAmount + " €");
+        outgoingsTxtView.setText(outgoingsAmount + " €");
+    }
+
+    private void openEarningsDialog() {
+        EarningsDialog earningsDialog = new EarningsDialog();
+        earningsDialog.show(getSupportFragmentManager(), "earnings dialog");
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -276,6 +305,32 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 assert response != null;
                 Log.e(TAG, "firebaseAuth: " + Objects.requireNonNull(response.getError()).getErrorCode());
             }
+        }
+    }
+
+    @Override
+    public void applyTexts(float amount, Date date) {
+        String sql = "INSERT INTO " + username + ".earnings (amount, date)" +
+                "VALUES (?, ?);";
+
+        PreparedStatement preparedStatement;
+
+        try {
+            preparedStatement = databaseConnection.getConnection()
+                    .prepareStatement(sql);
+
+            preparedStatement.clearParameters();
+
+            preparedStatement.setFloat(1, amount);
+            preparedStatement.setDate(2, date);
+
+            int response = preparedStatement.executeUpdate();
+
+            Log.v(TAG, "dbQuery: earnings response - " + response);
+
+            refreshTextViews();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
 }
