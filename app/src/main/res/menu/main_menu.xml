@@ -8,7 +8,8 @@
         <item
             android:id="@+id/nav_balance"
             android:icon="@drawable/ic_baseline_account_balance_24"
-            android:title="@string/show_movements" />
+            android:title="@string/show_movements"
+            android:visible="false" />
         <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_baseline_exit_to_app_24"
