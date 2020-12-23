@@ -64,6 +64,13 @@ public class HomeActivity extends AppCompatActivity implements
     private TextView outgoingsTxtView;
     private TextView balanceTxtView;
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        databaseConnection.closeConnection();
+        Log.v(TAG, "dbConnection: Disconnected!");
+    }
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
